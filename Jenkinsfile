@@ -31,13 +31,13 @@ pipeline {
             steps {
                 script {
                     // Create the output directory for the dependency check report
-                    bat 'mkdir workspace\\flask\\dependency-check-report'
+                    sh 'mkdir workspace\\flask\\dependency-check-report'
                     
                     // Print the dependency check home directory for debugging
-                    bat "echo Dependency Check Home: %DEPENDENCY_CHECK_HOME%"
-                    bat 'dir %DEPENDENCY_CHECK_HOME%\\bin'
+                    sh "echo Dependency Check Home: %DEPENDENCY_CHECK_HOME%"
+                    sh 'dir %DEPENDENCY_CHECK_HOME%\\bin'
                     
-                    bat '''
+                    sh '''
                     "%DEPENDENCY_CHECK_HOME%\\bin\\dependency-check.bat" --project "Flask App" --scan . --format "ALL" --out workspace\\flask\\dependency-check-report || true
                     '''
                 }
