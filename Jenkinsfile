@@ -60,23 +60,26 @@ pipeline {
                     sh 'sleep 5'
                     // Debugging: Check if the Flask app is running
                     sh 'curl -s http://127.0.0.1:5000 || echo "Flask app did not start"'
-                    
-                    // Test a strong password
+
+                    // Test a strong password and print the response for debugging
                     sh '''
-                    curl -s -X POST -F "password=StrongPass123" http://127.0.0.1:5000 | grep "Welcome"
+                    RESPONSE=$(curl -s -X POST -F "password=StrongPass123" http://127.0.0.1:5000)
+                    echo "Response: $RESPONSE"
+                    echo $RESPONSE | grep "Welcome"
                     '''
-                    
-                    // Test a weak password
+
+                    // Test a weak password and print the response for debugging
                     sh '''
-                    curl -s -X POST -F "password=password" http://127.0.0.1:5000 | grep "Password does not meet the requirements"
+                    RESPONSE=$(curl -s -X POST -F "password=password" http://127.0.0.1:5000)
+                    echo "Response: $RESPONSE"
+                    echo $RESPONSE | grep "Password does not meet the requirements"
                     '''
-                    
+
                     // Stop the Flask app
                     sh 'pkill -f "flask run"'
                 }
             }
         }
-        
         stage('Integration Testing') {
             steps {
                 dir('workspace/flask') {
