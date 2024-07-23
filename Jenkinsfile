@@ -55,11 +55,18 @@ pipeline {
             steps {
                 script {
                     // Start the Flask app in the background
-                    sh '. $VENV_PATH/bin/activate && FLASK_APP=$FLASK_APP flask run &'
+                    sh '''
+                    . $VENV_PATH/bin/activate
+                    FLASK_APP=$FLASK_APP flask run &> flask.log &
+                    '''
+                    
                     // Give the server a moment to start
-                    sh 'sleep 5'
+                    sh 'sleep 10'
+                    
                     // Debugging: Check if the Flask app is running
-                    sh 'curl -s http://127.0.0.1:5000 || echo "Flask app did not start"'
+                    sh '''
+                    curl -s http://127.0.0.1:5000 || echo "Flask app did not start"
+                    '''
                     
                     // Test a strong password
                     sh '''
@@ -72,7 +79,7 @@ pipeline {
                     '''
                     
                     // Stop the Flask app
-                    sh 'pkill -f "flask run"'
+                    sh 'pkill -f "flask run" || true'
                 }
             }
         }
