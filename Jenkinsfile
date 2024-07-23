@@ -25,13 +25,7 @@ pipeline {
             }
         }
         
-        stage('Setup Virtual Environment') {
-            steps {
-                dir('workspace/flask') {
-                    sh '/usr/bin/python3 -m venv $VENV_PATH'
-                }
-            }
-        }
+        
         
         stage('Activate Virtual Environment and Install Dependencies') {
             steps {
