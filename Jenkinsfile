@@ -23,7 +23,7 @@ pipeline {
             }
         }
         
-        stages {
+        
         stage('Build Docker Image') {
             steps {
                 script {
@@ -44,7 +44,7 @@ pipeline {
                 }
             }
         }
-    }
+    
         
         stage('UI Testing') {
             steps {
