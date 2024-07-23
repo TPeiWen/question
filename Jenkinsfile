@@ -30,15 +30,19 @@ pipeline {
         stage('Dependency Check') {
             steps {
                 script {
-                    // Create the output directory for the dependency check report
-                    sh 'mkdir workspace\\flask\\dependency-check-report'
+                    // Check if the output directory exists, create it if it does not
+                    sh '''
+                    if [ ! -d "workspace/flask/dependency-check-report" ]; then
+                        mkdir -p workspace/flask/dependency-check-report
+                    fi
+                    '''
                     
                     // Print the dependency check home directory for debugging
-                    sh "echo Dependency Check Home: %DEPENDENCY_CHECK_HOME%"
-                    sh 'dir %DEPENDENCY_CHECK_HOME%\\bin'
+                    sh "echo Dependency Check Home: ${DEPENDENCY_CHECK_HOME}"
+                    sh "ls -l ${DEPENDENCY_CHECK_HOME}/bin"
                     
                     sh '''
-                    "%DEPENDENCY_CHECK_HOME%\\bin\\dependency-check.bat" --project "Flask App" --scan . --format "ALL" --out workspace\\flask\\dependency-check-report || true
+                    ${DEPENDENCY_CHECK_HOME}/bin/dependency-check.sh --project "Flask App" --scan . --format "ALL" --out workspace/flask/dependency-check-report || true
                     '''
                 }
             }
