@@ -23,9 +23,10 @@ pipeline {
             }
         }
         
+        stages {
         stage('Build Docker Image') {
             steps {
-                dir('workspace/flask') {
+                script {
                     sh 'docker build -t flask-app .'
                 }
             }
@@ -39,10 +40,11 @@ pipeline {
                     // Remove the stopped container
                     sh 'docker ps -a --filter status=exited --filter publish=5000 --format "{{.ID}}" | xargs -r docker rm'
                     // Run the new Flask app container
-                    sh 'docker run -d -p 5000:5000 --name flask-app-container flask-app'
+                    sh 'docker run -d -p 5000:5000 flask-app'
                 }
             }
         }
+    }
         
         stage('UI Testing') {
             steps {
