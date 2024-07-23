@@ -2,15 +2,12 @@ pipeline {
     agent any
 
     environment {
-        VENV_PATH = 'venv'
-        FLASK_APP = 'workspace/flask/app.py'  // Correct path to the Flask app
-        PATH = "$VENV_PATH/bin:$PATH"
+        FLASK_APP = 'workspace/flask/app.py'
         SONARQUBE_SCANNER_HOME = tool name: 'SonarQube Scanner'
-        SONARQUBE_TOKEN = 'squ_4b1f1bebaf7f2c5c0cc12f3f3585246eeafe143d'  // Set your new SonarQube token here
-       DEPENDENCY_CHECK_HOME = '/var/jenkins_home/tools/org.jenkinsci.plugins.DependencyCheck.tools.DependencyCheckInstallation/OWASP_Dependency-Check/dependency-check'
-    
+        SONARQUBE_TOKEN = 'squ_6b146edc8eca9957203e58ba7d82dfc1ffa52924'
+        DEPENDENCY_CHECK_HOME = '/var/jenkins_home/tools/org.jenkinsci.plugins.DependencyCheck.tools.DependencyCheckInstallation/OWASP_Dependency-Check/dependency-check'
     }
-    
+
     stages {
         stage('Check Docker') {
             steps {
@@ -21,57 +18,28 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 dir('workspace') {
-                    git branch: 'main', url: 'https://github.com/TPeiWen/question.git'
+                    git branch: 'main', url: 'https://github.com/TPeiWen/test.git'
                 }
             }
-        
         }
         
-	stage('Setup Virtual Environment') {
+        stage('Build Docker Image') {
             steps {
                 dir('workspace/flask') {
-                    sh '''
-                    # Check if the virtual environment exists
-                    if [ ! -d "$VENV_PATH" ]; then
-                        python3 -m venv $VENV_PATH
-                    fi
-                    '''
-                }
-            }
-        }
-
-        stage('Activate Virtual Environment and Install Dependencies') {
-            steps {
-                dir('workspace/flask') {
-                    sh '''
-                    # Activate the virtual environment and install dependencies
-                    . $VENV_PATH/bin/activate
-                    pip install -r requirements.txt
-                    '''
+                    sh 'docker build -t flask-app .'
                 }
             }
         }
         
-        stage('Dependency Check') {
+        stage('Run Docker Container') {
             steps {
                 script {
-                    // Check if the output directory exists, create it if it does not
-                    sh '''
-                    if [ ! -d "workspace/flask/dependency-check-report" ]; then
-                        mkdir -p workspace/flask/dependency-check-report
-                    fi
-                    '''
-                    
-                    // Print the dependency check home directory for debugging
-                    sh '''
-                    ${DEPENDENCY_CHECK_HOME}/bin/dependency-check.sh --project "Flask App" --scan . --format "ALL" --out workspace/flask/dependency-check-report || true
-
-                    '''
-                    
-                    // Run Dependency Check
-                    sh '''
-                    "${DEPENDENCY_CHECK_HOME}/bin/dependency-check.bat" --project "Flask App" --scan . --format "ALL" --out workspace/flask/dependency-check-report || true
-                    '''
+                    // Stop any running container on port 5000
+                    sh 'docker ps --filter publish=5000 --format "{{.ID}}" | xargs -r docker stop'
+                    // Remove the stopped container
+                    sh 'docker ps -a --filter status=exited --filter publish=5000 --format "{{.ID}}" | xargs -r docker rm'
+                    // Run the new Flask app container
+                    sh 'docker run -d -p 5000:5000 --name flask-app-container flask-app'
                 }
             }
         }
@@ -79,19 +47,11 @@ pipeline {
         stage('UI Testing') {
             steps {
                 script {
-                    // Start the Flask app in the background
-                    sh '''
-                    . $VENV_PATH/bin/activate
-                    FLASK_APP=$FLASK_APP flask run &> flask.log &
-                    '''
-                    
                     // Give the server a moment to start
                     sh 'sleep 10'
                     
-                    // Debugging: Check if the Flask app is running
-                    sh '''
-                    curl -s http://127.0.0.1:5000 || echo "Flask app did not start"
-                    '''
+                    // Check if the Flask app is running
+                    sh 'curl -s http://127.0.0.1:5000 || echo "Flask app did not start"'
                     
                     // Test a strong password
                     sh '''
@@ -104,23 +64,15 @@ pipeline {
                     '''
                     
                     // Stop the Flask app
-                    sh 'pkill -f "flask run" || true'
-                }
-            }
-        }
-
-        stage('Integration Testing') {
-            steps {
-                dir('workspace/flask') {
-                    sh '. $VENV_PATH/bin/activate && pytest --junitxml=integration-test-results.xml'
+                    sh 'docker stop flask-app-container || true'
                 }
             }
         }
         
-        stage('Build Docker Image') {
+        stage('Integration Testing') {
             steps {
                 dir('workspace/flask') {
-                    sh 'docker build -t flask-app .'
+                    sh 'docker run --rm -v "$(pwd)":/app -w /app flask-app pytest --junitxml=integration-test-results.xml'
                 }
             }
         }
@@ -138,21 +90,6 @@ pipeline {
                         -Dsonar.login=${SONARQUBE_TOKEN}
                         '''
                     }
-                }
-            }
-        }
-        
-        stage('Deploy Flask App') {
-            steps {
-                script {
-                    echo 'Deploying Flask App...'
-                    // Stop any running container on port 5000
-                    sh 'docker ps --filter publish=5000 --format "{{.ID}}" | xargs -r docker stop'
-                    // Remove the stopped container
-                    sh 'docker ps -a --filter status=exited --filter publish=5000 --format "{{.ID}}" | xargs -r docker rm'
-                    // Run the new Flask app container
-                    sh 'docker run -d -p 5000:5000 flask-app'
-                    sh 'sleep 10'
                 }
             }
         }
