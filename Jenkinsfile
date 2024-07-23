@@ -26,14 +26,7 @@ pipeline {
             }
         
         }
-        stage('Activate Virtual Environment and Install Dependencies') {
-            steps {
-                dir('workspace/flask') {
-                    sh '. $VENV_PATH/bin/activate && pip install -r requirements.txt'
-                }
-            }
-        }
-
+        
 	stage('Setup Virtual Environment') {
             steps {
                 dir('workspace/flask') {
