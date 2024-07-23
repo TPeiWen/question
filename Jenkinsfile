@@ -25,7 +25,7 @@ pipeline {
                 }
             }
         
-        stages {
+        }
         stage('Check Python Installation') {
             steps {
                 sh 'python3 --version'
