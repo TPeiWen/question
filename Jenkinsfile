@@ -26,11 +26,14 @@ pipeline {
             }
         
         }
-        stage('Check Python Installation') {
+        stage('Activate Virtual Environment and Install Dependencies') {
             steps {
-                sh 'python3 --version'
+                dir('workspace/flask') {
+                    sh '. $VENV_PATH/bin/activate && pip install -r requirements.txt'
+                }
             }
         }
+
 	stage('Setup Virtual Environment') {
             steps {
                 dir('workspace/flask') {
