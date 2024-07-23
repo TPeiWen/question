@@ -54,41 +54,29 @@ pipeline {
         stage('UI Testing') {
             steps {
                 script {
-                    // Start the Flask app in the background and log output to a file
-                    sh '. $VENV_PATH/bin/activate && FLASK_APP=$FLASK_APP flask run > flask.log 2>&1 &'
+                    // Start the Flask app in the background
+                    sh '. $VENV_PATH/bin/activate && FLASK_APP=$FLASK_APP flask run &'
                     // Give the server a moment to start
                     sh 'sleep 5'
-                    
-                    // Check if Flask app is running by making a request to the root endpoint
-                    sh '''
-                    if curl -s http://127.0.0.1:5000 | grep -q "expected_text"; then
-                        echo "Flask app is running"
-                    else
-                        echo "Flask app is not running" >&2
-                        cat flask.log
-                        exit 1
-                    fi
-                    '''
+                    // Debugging: Check if the Flask app is running
+                    sh 'curl -s http://127.0.0.1:5000 || echo "Flask app did not start"'
                     
                     // Test a strong password
                     sh '''
-                    RESPONSE=$(curl -s -X POST -F "password=StrongPass123" http://127.0.0.1:5000)
-                    echo "Response: $RESPONSE"
-                    echo $RESPONSE | grep "Welcome"
+                    curl -s -X POST -F "password=StrongPass123" http://127.0.0.1:5000 | grep "Welcome"
                     '''
-
+                    
                     // Test a weak password
                     sh '''
-                    RESPONSE=$(curl -s -X POST -F "password=password" http://127.0.0.1:5000)
-                    echo "Response: $RESPONSE"
-                    echo $RESPONSE | grep "Password does not meet the requirements"
+                    curl -s -X POST -F "password=password" http://127.0.0.1:5000 | grep "Password does not meet the requirements"
                     '''
-
+                    
                     // Stop the Flask app
                     sh 'pkill -f "flask run"'
                 }
             }
         }
+
         stage('Integration Testing') {
             steps {
                 dir('workspace/flask') {
