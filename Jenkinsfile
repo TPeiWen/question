@@ -24,7 +24,7 @@ pipeline {
                     git branch: 'main', url: 'https://github.com/TPeiWen/question.git'
                 }
             }
-        }
+        
         stages {
         stage('Check Python Installation') {
             steps {
