@@ -5,7 +5,7 @@ import requests
 app = Flask(__name__)
 
 # URL of the common passwords list
-COMMON_PASSWORDS_URL = 'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-1000.txt'
+COMMON_PASSWORDS_URL = 'https://github.com/danielmiessler/SecLists/tree/master/Passwords/Common-Credentials/10-million-password-list-top-1000.txt'
 common_passwords = set(requests.get(COMMON_PASSWORDS_URL).text.splitlines())
 
 def is_password_strong(password):
