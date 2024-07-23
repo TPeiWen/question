@@ -7,7 +7,7 @@ pipeline {
         PATH = "$VENV_PATH/bin:$PATH"
         SONARQUBE_SCANNER_HOME = tool name: 'SonarQube Scanner'
         SONARQUBE_TOKEN = 'squ_4b1f1bebaf7f2c5c0cc12f3f3585246eeafe143d'  // Set your new SonarQube token here
-       DEPENDENCY_CHECK_HOME = 'C:\\SIT\\PeiWen\\Y2T3\\SSD\\dependency-check-10.0.2-release\\dependency-check'
+       DEPENDENCY_CHECK_HOME = 'https://github.com/jeremylong/DependencyCheck/releases/tag/v10.0.2'
     
     }
     
