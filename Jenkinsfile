@@ -42,22 +42,17 @@ pipeline {
                     if [ ! -d "$VENV_PATH" ]; then
                         python3 -m venv $VENV_PATH
                     fi
-
-                    # Activate the virtual environment
-                    . $VENV_PATH/bin/activate
                     '''
                 }
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Activate Virtual Environment and Install Dependencies') {
             steps {
                 dir('workspace/flask') {
                     sh '''
-                    # Activate the virtual environment
+                    # Activate the virtual environment and install dependencies
                     . $VENV_PATH/bin/activate
-
-                    # Install required Python packages
                     pip install -r requirements.txt
                     '''
                 }
