@@ -3,14 +3,13 @@ pipeline {
 
     environment {
         VENV_PATH = 'venv'
-        FLASK_APP = 'workspace/flask/app.py'  // Correct path to the Flask app
+        FLASK_APP = 'workspace/flask/app.py'
         PATH = "$VENV_PATH/bin:$PATH"
         SONARQUBE_SCANNER_HOME = tool name: 'SonarQube Scanner'
-        SONARQUBE_TOKEN = 'squ_4b1f1bebaf7f2c5c0cc12f3f3585246eeafe143d'  // Set your new SonarQube token here
-       DEPENDENCY_CHECK_HOME = '/var/jenkins_home/tools/org.jenkinsci.plugins.DependencyCheck.tools.DependencyCheckInstallation/OWASP_Dependency-Check/dependency-check'
-    
+        SONARQUBE_TOKEN = 'squ_4b1f1bebaf7f2c5c0cc12f3f3585246eeafe143d'
+        DEPENDENCY_CHECK_HOME = '/var/jenkins_home/tools/org.jenkinsci.plugins.DependencyCheck.tools.DependencyCheckInstallation/OWASP_Dependency-Check/dependency-check'
     }
-    
+
     stages {
         stage('Check Docker') {
             steps {
@@ -24,30 +23,36 @@ pipeline {
                     git branch: 'main', url: 'https://github.com/TPeiWen/question.git'
                 }
             }
-        
         }
-        
-	
-                
+
+        stage('Setup Virtual Environment') {
+            steps {
+                dir('workspace/flask') {
+                    sh '''
+                    if [ ! -d "$VENV_PATH" ]; then
+                        python3 -m venv $VENV_PATH
+                    fi
+                    '''
+                }
+            }
+        }
+
+        stage('Check Virtual Environment') {
+            steps {
+                dir('workspace/flask') {
+                    sh 'ls -l venv/bin'
+                }
+            }
+        }
+
         stage('Dependency Check') {
             steps {
                 script {
-                    // Check if the output directory exists, create it if it does not
                     sh '''
                     if [ ! -d "workspace/flask/dependency-check-report" ]; then
                         mkdir -p workspace/flask/dependency-check-report
                     fi
-                    '''
-                    
-                    // Print the dependency check home directory for debugging
-                    sh '''
                     ${DEPENDENCY_CHECK_HOME}/bin/dependency-check.sh --project "Flask App" --scan . --format "ALL" --out workspace/flask/dependency-check-report || true
-
-                    '''
-                    
-                    // Run Dependency Check
-                    sh '''
-                    "${DEPENDENCY_CHECK_HOME}/bin/dependency-check.bat" --project "Flask App" --scan . --format "ALL" --out workspace/flask/dependency-check-report || true
                     '''
                 }
             }
@@ -56,10 +61,9 @@ pipeline {
         stage('UI Testing') {
             steps {
                 script {
-                    // Start the Flask app in the background
                     sh '''
                     . $VENV_PATH/bin/activate
-                    FLASK_APP=$FLASK_APP flask run &> flask.log &
+                    FLASK_APP=$FLASK_APP flask run > flask.log 2>&1 &
                     '''
                     
                     // Give the server a moment to start
