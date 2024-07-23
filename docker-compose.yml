@@ -1,6 +1,7 @@
-version: '3'
+version: '3.8'  # Specify the version of the Docker Compose file format
+
 services:
- # Jenkins service configuration
+  # Jenkins service configuration
   jenkins:
     build: 
       context: ./jenkins  # Path to the Jenkins Dockerfile directory
@@ -35,6 +36,8 @@ services:
       - SONARQUBE_JDBC_PASSWORD=sonarqube  # Database password
 
 
+
+
   # PostgreSQL database service configuration
   db:
     image: postgres:latest  # Use the latest version of PostgreSQL
@@ -44,8 +47,7 @@ services:
       POSTGRES_DB: sonarqube  # Set the name of the database
 
 volumes:
-  jenkins_data:
-    driver: local
+  jenkins_home:  # Define a Docker volume to persist Jenkins data
 
 
-
+  
