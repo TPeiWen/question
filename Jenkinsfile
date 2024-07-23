@@ -40,7 +40,7 @@ pipeline {
                     // Print the dependency check home directory for debugging
                     sh '''
                     echo "Dependency Check Home: ${DEPENDENCY_CHECK_HOME}"
-                    ls -l "${DEPENDENCY_CHECK_HOME}/bin"
+                    ls -l "${DEPENDENCY_CHECK_HOME}\bin"
                     '''
                     
                     // Run Dependency Check
