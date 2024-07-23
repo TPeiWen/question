@@ -25,8 +25,13 @@ pipeline {
                 }
             }
         }
-        
-stage('Setup Virtual Environment') {
+        stages {
+        stage('Check Python Installation') {
+            steps {
+                sh 'python3 --version'
+            }
+        }
+	stage('Setup Virtual Environment') {
             steps {
                 dir('workspace/flask') {
                     sh '''
