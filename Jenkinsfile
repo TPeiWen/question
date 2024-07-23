@@ -7,7 +7,8 @@ pipeline {
         PATH = "$VENV_PATH/bin:$PATH"
         SONARQUBE_SCANNER_HOME = tool name: 'SonarQube Scanner'
         SONARQUBE_TOKEN = 'squ_4b1f1bebaf7f2c5c0cc12f3f3585246eeafe143d'  // Set your new SonarQube token here
-        DEPENDENCY_CHECK_HOME = '/var/jenkins_home/tools/org.jenkinsci.plugins.DependencyCheck.tools.DependencyCheckInstallation/OWASP_Dependency-Check/dependency-check'
+       DEPENDENCY_CHECK_HOME = 'C:\\SIT\\PeiWen\\Y2T3\\SSD\\dependency-check-10.0.2-release'
+    
     }
     
     stages {
@@ -30,12 +31,14 @@ pipeline {
             steps {
                 script {
                     // Create the output directory for the dependency check report
-                    sh 'mkdir -p workspace/flask/dependency-check-report'
+                    bat 'mkdir workspace\\flask\\dependency-check-report'
+                    
                     // Print the dependency check home directory for debugging
-                    sh 'echo "Dependency Check Home: $DEPENDENCY_CHECK_HOME"'
-                    sh 'ls -l $DEPENDENCY_CHECK_HOME/bin'
-                    sh '''
-                    ${DEPENDENCY_CHECK_HOME}/bin/dependency-check.sh --project "Flask App" --scan . --format "ALL" --out workspace/flask/dependency-check-report || true
+                    bat "echo Dependency Check Home: %DEPENDENCY_CHECK_HOME%"
+                    bat 'dir %DEPENDENCY_CHECK_HOME%\\bin'
+                    
+                    bat '''
+                    "%DEPENDENCY_CHECK_HOME%\\bin\\dependency-check.bat" --project "Flask App" --scan . --format "ALL" --out workspace\\flask\\dependency-check-report || true
                     '''
                 }
             }
